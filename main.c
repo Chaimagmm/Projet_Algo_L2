@@ -6,7 +6,30 @@
 
 void DrawArray(int *array, int size, int highlightedIndex);
 void QuickSort(int *array, int low, int high);
+void insererDansTableauTriee(int tableau[], int *taille, int valeur) {
+    // Vérifier si le tableau a de la place pour la nouvelle valeur
+    if (*taille >= MAX_SIZE) {
+        printf("Tableau plein, impossible d'insérer la nouvelle valeur.\n");
+        return;
+    }
 
+    // Trouver la position d'insertion en conservant l'ordre croissant
+    int position = 0;
+    while (position < *taille && tableau[position] < valeur) {
+        position += 1;
+    }
+
+    // Décaler les éléments du tableau vers la droite à partir de la position d'insertion
+    for (int i = *taille; i > position; i--) {
+        tableau[i] = tableau[i - 1];
+    }
+
+    // Insérer la nouvelle valeur à la position spécifiée
+    tableau[position] = valeur;
+
+    // Augmenter la taille du tableau
+    *taille = *taille + 1;
+}
 int main(void) {
     const int screenWidth = 800;
     const int screenHeight = 450;
@@ -15,7 +38,7 @@ int main(void) {
 
     int *array = (int *)malloc(MAX_SIZE * sizeof(int));
     int size = 0;
-    int highlightedIndex = -1;  // Index de l'Ã©lÃ©ment en cours de traitement
+    int highlightedIndex = -1;  // Index de l'élément en cours de traitement
 
     SetTargetFPS(60);
 
@@ -33,19 +56,35 @@ int main(void) {
         DrawText("2. Trier (QuickSort)", 10, 140, 20, DARKGRAY);
         DrawText("3. Quitter", 10, 170, 20, DARKGRAY);
 
-        // Lire l'entrÃ©e utilisateur
+        // Lire l'entrée utilisateur
         int choice = GetKeyPressed();
-        switch (choice) {
-            case '1': // Ajouter un nombre
-                if (size < MAX_SIZE) {
-                    array[size] = GetRandomValue(10, 200);
-                    size++;
-                }
-                break;
+
+    int taille, val, tableau[MAX_SIZE];
+
+    // Demander la taille du tableau
+    printf("Donnez la taille du tableau : ");
+    scanf("%d", &taille);
+
+    // Demander les valeurs du tableau
+    for (int i = 0; i < taille; i++) {
+        printf("Donnez la valeur %d : ", i + 1);
+        scanf("%d", &tableau[i]);
+    }
+
+               switch (choice) {
             case '2': // Trier (QuickSort)
                 QuickSort(array, 0, size - 1);
-                highlightedIndex = -1; // RÃ©initialiser l'index en surbrillance aprÃ¨s le tri
+                highlightedIndex = -1;
+// Réinitialiser l'index en          surbrillance après le tri
                 break;
+          case '1':
+     printf("Donnez la valeur que vous souhaitez insérer : ");
+     scanf("%d", &val);
+     insererDansTableauTriee(tableau, &taille, val);
+highlightedIndex = -1;
+     DrawArray(*tableau,taille,highlightedIndex);
+     break;
+
             case '3': // Quitter
                 CloseWindow();
                 break;
@@ -93,14 +132,13 @@ void QuickSort(int *array, int low, int high) {
             while (array[j] > pivotValue && j >= low) {
                 j--;
             }
-
-            if (i < j) {
-                // Ã‰changer array[i] et array[j]
+if (i < j) {
+                // Échanger array[i] et array[j]
                 int temp = array[i];
                 array[i] = array[j];
                 array[j] = temp;
 
-                // Mettre Ã  jour l'index en surbrillance
+                // Mettre à jour l'index en surbrillance
                 BeginDrawing();
                 ClearBackground(RAYWHITE);
                 DrawArray(array, high + 1, i);
@@ -111,12 +149,12 @@ void QuickSort(int *array, int low, int high) {
             }
         }
 
-        // Ã‰changer array[low] et array[j]
+        // Échanger array[low] et array[j]
         int temp = array[low];
         array[low] = array[j];
         array[j] = temp;
 
-        // Mettre Ã  jour l'index en surbrillance
+        // Mettre à jour l'index en surbrillance
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawArray(array, high + 1, j);
@@ -125,7 +163,7 @@ void QuickSort(int *array, int low, int high) {
         // Attendre un court instant pour voir le changement
         while (GetTime() < 0.1) {}  // Pause d'environ 0.1 seconde
 
-        // Trier les sous-tableaux Ã  gauche et Ã  droite du pivot
+        // Trier les sous-tableaux à gauche et à droite du pivot
         QuickSort(array, low, j - 1);
         QuickSort(array, j + 1, high);
     }

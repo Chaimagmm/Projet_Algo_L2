@@ -1,418 +1,273 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#define MAX_RECTANGLES 200
-int tab[MAX_RECTANGLES];
-//Quick sort algorithm
-   //1-Swap function
-   // swaps the value of what x is pointing to with the value of what y is
-// pointing to, used to perform swaps of array elements in quicksort partition
-   void swap(int *x ,int *y)
-   {
-       int temp = *x;
-       *x = *y;
-       *y = temp;
-   }
-   //2-Parition function
-   // partitions the array between low - upper indexes by a pivot value and returns
-// the index of the pivot
-   int partition(int tab[] , int lb , int ub)
-   {
-       // lb is the lower bound of the array and ub is the upper one
-       int pivot = tab[lb];
-       int start = lb;
-       int end = ub;
-       int temp;
-       while(start < end)
-       {
-           while(tab[start] <= pivot)
-           {
-               start++;
-           }
-           while(tab[end] > pivot)
-           {
-               end--;
-           }
-           if(start < end)
-           {
-             swap(&tab[start],&tab[end]);
-           }
-       }
-       swap(&tab[lb],&tab[end]);
-       return end;
-   }
-   //3-Quick sort recursive function
-   // applies the recursive divide and conquer portion of the quicksort algorithm
-// to the array... applying quicksort to the array between the low and upper bound
-   void quick_sort(int tab[] , int lb , int ub)
-   {
-       int loc;
-       // stop recursion when low >= upper
-       if(lb < ub)
-       {
-           //loc is a variable which will contain the correct index of the pivot
-           loc = partition(tab,lb,ub);
-           // apply quicksort to the left side subarray
-           quick_sort(tab,lb,loc-1);
-           // apply quicksort to the right side subarray
-           quick_sort(tab,loc +1,ub);
-       }
-   }
+#include "raylib.h"
+#include <time.h>
+#define MAX_SIZE 50
+#define CELL_WIDTH 40
+#define CELL_HEIGHT 40
+#define OFFSET_X 10
+#define OFFSET_Y 40
+#define SPEED 10
 
-int main(int argc, char *argv[]) {
-    int j = 100;
-    int n;
-    printf("Enter the number of elements for the array: ");
-    scanf("%d", &n);
-    printf("Enter the elements of the array\n");
-    for (int i = 0; i < n; i++) {
-        scanf("%d", &tab[i]);
-    }
-    quick_sort(tab,0,n-1);
-    printf(" the elements of the array after the quick sort\n");
-    for (int i = 0; i < n; i++) {
-        printf("%d", tab[i]);
-    }
-    SDL_Init(SDL_INIT_VIDEO);
+void DrawArray(int *array, int size, int highlightedIndex, int pivotIndex);
+void QuickSort(int *array, int low, int high);
+void Swap(int *array, int i, int j);
+int BinarySearch(int *array, int low, int high, int value);
+void DeleteFirst(int *array, int *size);
+void DeleteLast(int *array, int *size);
+void InsertFirst(int *array, int *size, int value);
+void InsertLast(int *array, int *size, int value);
 
-    SDL_Window *Window = SDL_CreateWindow("Title", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1000, 500, 0);
-    SDL_Renderer *Renderer = SDL_CreateRenderer(Window, -1, 0);
+int main(void) {
+const int screenWidth = 800;
+const int screenHeight = 450;
 
-    int Running = 1;
-    SDL_Event Event = {0};
-    ///SDL_Event: SDL_Event is a structure in SDL that represents an event.
-    ///Events can be things like keyboard presses, mouse movements, window events, etc.
-    ///{0}: This is a C language shorthand for initializing all members of a structure to zero.
-    ///It sets the entire structure to zero values, effectively initializing all fields to a default state.
+InitWindow(screenWidth, screenHeight, "Tri Rapide avec Animation");
 
-///Event: This is the name given to the instance of the SDL_Event structure.
+int array[MAX_SIZE]; // Déclarer le tableau comme un tableau statique
+int size = 0;
 
-///{0}: This is a C language shorthand for initializing all members of a structure to zero. It sets the entire structure to zero values, effectively initializing all fields to a default state.
+SetTargetFPS(60);
 
-    // Create buttons
-    SDL_Rect button1 = {400, 400, 200, 100}; // x, y, width, height
-    SDL_Rect button2 = {600, 400, 200, 100}; // x, y, width, height
-    SDL_Rect button3 = {800, 400, 200, 100}; // x, y, width, height
-    SDL_Rect button4 = {1000, 400, 200, 100}; // x, y, width, height
-    int button1Visible = 1; // Flag to control button 1 visibility
-    int button4Visible = 1; // Flag to control button 4 visibility
-    int rectanglesVisible[MAX_RECTANGLES];
-    for (int i = 0; i < MAX_RECTANGLES; i++) {
-        rectanglesVisible[i] = 0;
-    }
-    int rectanglesMoving = 0; // Flag to control rectangles movement
+while (!WindowShouldClose()) {
+    BeginDrawing();
 
-    SDL_Rect rectangles[MAX_RECTANGLES];
-    int rectanglesCount = 0;
+    ClearBackground(RAYWHITE);
 
-    while (Running) {
-        while (SDL_PollEvent(&Event)) {
-            switch (Event.type) {
-                case SDL_QUIT:
-                    // Handle quit event (window close button clicked)
-                    Running = 0;
-                    break;
-                case SDL_KEYDOWN:
-                    // Handle key press event
+    // Afficher le tableau actuel
+    DrawArray(array, size, -1, -1);
 
-                    switch (Event.key.keysym.sym) {
-                        case SDLK_o:
+    // Afficher les options
+    DrawText("Options:", 10, 80, 20, DARKGRAY);
+    DrawText("1. Ajouter un nombre au debut", 10, 110, 20, DARKGRAY);
+    DrawText("2. Ajouter un nombre a la fin", 10, 140, 20, DARKGRAY);
+    DrawText("3. Supprimer le premier element", 10, 170, 20, DARKGRAY); // Corriger la faute de frappe
+    DrawText("4. Supprimer le dernier element", 10, 200, 20, DARKGRAY);
+    DrawText("5. Trier (QuickSort)", 10, 230, 20, DARKGRAY);
+    DrawText("6. Rechercher (BinarySearch)", 10, 260, 20, DARKGRAY);
+    DrawText("7. Quitter", 10, 290, 20, DARKGRAY);
 
+    // Lire l'entrée utilisateur
+    if (IsKeyPressed(KEY_ONE)) { // Utiliser IsKeyPressed de raylib
+        if (size < MAX_SIZE) {
+            int value = GetRandomValue(10, 200); // Utiliser GetRandomValue de raylib
+            //InsertLast(array, &size, value); // Commenter cette ligne inutile
+            InsertFirst(array, &size, value); // Ajouter un nombre au début
+        }
+    } else if (IsKeyPressed(KEY_TWO)) {
 
-Running = 0;
-                            //If the 'o' key is pressed, it sets Running to 0.
-                           // This typically means that the program will exit because
-                            //the main loop (while (Running)) will exit when Running becomes 0.
+        if (size < MAX_SIZE) { // Ajouter cette condition
+            int value = GetRandomValue(10, 200); // Utiliser GetRandomValue de raylib
+            InsertLast(array, &size, value); // Ajouter un nombre à la fin
+        }
+    } else if (IsKeyPressed(KEY_THREE)) {
+        if (size > 0) {
+            DeleteFirst(array, &size); // Supprimer le premier élément
+        }
+    } else if (IsKeyPressed(KEY_FOUR)) {
+        if (size > 0) {
+            DeleteLast(array, &size); // Supprimer le dernier élément
+        }
+    } else if (IsKeyPressed(KEY_FIVE)) {
+        if (size > 0) {
+            QuickSort(array, 0, size - 1); // Trier le tableau
+        }
+    } else if (IsKeyPressed(KEY_SIX)) {
+        if (size > 0) { // Ajouter cette condition
+            int value = GetRandomValue(10, 200); // Utiliser GetRandomValue de raylib
+            int index = BinarySearch(array, 0, size - 1, value); // Rechercher une valeur
+            if (index != -1) {
+                DrawText(TextFormat("L'element %d se trouve à l'index %d", value, index), 10, 320, 20, DARKGRAY);
 
-                            break;
-                        case SDLK_s:
-                            for (int i = 0; i < n; i++) {
-                                rectanglesVisible[i] = 1;
-                            }
-                            button1Visible = 1;  //makes button1Visible true
-                            rectanglesMoving = 0;
-                            //If the 's' key is pressed, it sets rectanglesVisible for all rectangles to 1
-                            // makes button1Visible true, and sets rectanglesMoving to 0.
-                            //This suggests that pressing 's' is associated with showing rectangles and stopping their movement.
+            } else {
+                DrawText(TextFormat("L'element %d n'existe pas dans le tableau", value), 10, 320, 20, DARKGRAY);
 
-                            break;
-                        case SDLK_m:
-                            button1Visible = 1;
-                            for (int i = 0; i < n; i++) {
-                                rectanglesVisible[i] = 0;
-                            }
-                            rectanglesMoving = 1;
-                            /*If the 'm' key is pressed, it makes button1Visible true and sets rectanglesVisible for all rectangles to 0.
-                            It also sets rectanglesMoving to 1.
-                            This suggests that pressing 'm' is associated with hiding rectangles and starting their movement.*/
-/*#include <stdio.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>*/
-
-// Fonction pour initialiser SDL
-int initSDL(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        fprintf(stderr, "Erreur d'initialisation de SDL: %s\n", SDL_GetError());
-        return -1;
+            }
+        }
+    } else if (IsKeyPressed(KEY_SEVEN)) {
+        CloseWindow(); // Utiliser CloseWindow de raylib
     }
 
-    *window = SDL_CreateWindow("SDL2/SDL_ttf Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
-    if (*window == NULL) {
-        fprintf(stderr, "Erreur lors de la création de la fenêtre: %s\n", SDL_GetError());
-        return -1;
-    }
-
-    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
-    if (*renderer == NULL) {
-        fprintf(stderr, "Erreur lors de la création du rendu: %s\n", SDL_GetError());
-        return -1;
-    }
-
-    if (TTF_Init() == -1) {
-        fprintf(stderr, "Erreur d'initialisation de SDL_ttf: %s\n", TTF_GetError());
-        return -1;
-    }
-
-    *font = TTF_OpenFont("chemin/vers/votre/police.ttf", 24);  // Remplacez par le chemin de votre police TTF
-    if (*font == NULL) {
-        fprintf(stderr, "Erreur lors de l'ouverture de la police: %s\n", TTF_GetError());
-        return -1;
-    }
-
-    return 0;
+    EndDrawing();
+}
+return 0;
 }
 
-// Fonction pour libérer les ressources SDL
-void cleanupSDL(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font) {
-    TTF_CloseFont(font);
-    TTF_Quit();
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+// Fonction pour dessiner le tableau avec les rectangles
+void DrawArray(int *array, int size, int highlightedIndex, int pivotIndex) {
+    DrawText("Tableau Actuel:", 10, 10, 20, DARKGRAY);
+
+    for (int i = 0; i < size; i++) {
+        if (i == highlightedIndex) {
+            DrawRectangle(OFFSET_X + i * (CELL_WIDTH + 5), OFFSET_Y, CELL_WIDTH, CELL_HEIGHT, ORANGE);
+        } else if (i == pivotIndex) {
+            DrawRectangle(OFFSET_X + i * (CELL_WIDTH + 5), OFFSET_Y, CELL_WIDTH, CELL_HEIGHT, RED);
+        } else {
+            DrawRectangle(OFFSET_X + i * (CELL_WIDTH + 5), OFFSET_Y, CELL_WIDTH, CELL_HEIGHT, PINK);
+        }
+
+        DrawText(TextFormat("%d", array[i]), OFFSET_X + i * (CELL_WIDTH + 5) + CELL_WIDTH / 4,
+                 OFFSET_Y + CELL_HEIGHT / 4, 20, DARKGRAY);
+    }
 }
 
-// Fonction principale
-int main() {
-    SDL_Window *window = NULL;
-    SDL_Renderer *renderer = NULL;
-    TTF_Font *font = NULL;
+// Fonction pour le tri rapide (QuickSort)
+void QuickSort(int *array, int low, int high) {
+    if (low < high) {
+        int pivotIndex = low;
+        int pivotValue = array[pivotIndex];
+        int i = low;
+        int j = high;
 
-    if (initSDL(&window, &renderer, &font) != 0) {
-        fprintf(stderr, "Erreur d'initialisation de SDL\n");
-        return 1;
-    }
+        // Afficher le tableau avant la partition
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawArray(array, high + 1, -1, pivotIndex);
+        DrawText("Avant la partition : \n", 10, 200, 20, DARKGRAY);
+        for (int k = low; k <= high; k++) {
+            DrawText(TextFormat("%d ", array[k]), 180 + k * 40, 200, 20, DARKGRAY);
+        }
+        EndDrawing();
 
-    SDL_Surface *textSurface = NULL;
-    SDL_Texture *textTexture = NULL;
+        // Attendre un court instant pour voir le changement
+        double startTime = GetTime(); // Enregistrer le temps de départ
+        while (GetTime() - startTime < 2) {} // Attendre 2 seconde
 
-    SDL_Color textColor = {255, 255, 255};  // Blanc
+        while (i < j) {
+            while (array[i] <= pivotValue && i <= high) {
+                i++;
+            }
 
-    const char *text = "Hello SDL2/SDL_ttf!";
-    textSurface = TTF_RenderText_Solid(font, text, textColor);
-    if (textSurface == NULL) {
-        fprintf(stderr, "Erreur lors de la création de la surface du texte: %s\n", TTF_GetError());
-        cleanupSDL(window, renderer, font);
-        return 1;
-    }
+            while (array[j] > pivotValue && j >= low) {
+                j--;
+            }
 
-    textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    if (textTexture == NULL) {
-        fprintf(stderr, "Erreur lors de la création de la texture du texte: %s\n", SDL_GetError());
-        cleanupSDL(window, renderer, font);
-        return 1;
-    }
+            if (i < j) {
+                // Échanger array[i] et array[j]
+                Swap(array, i, j);
 
-    SDL_Rect destRect = {100, 300, textSurface->w, textSurface->h};
+                // Mettre à jour l'index en surbrillance
+                BeginDrawing();
+                ClearBackground(RAYWHITE);
+                DrawArray(array, high + 1, i, pivotIndex);
+                EndDrawing();
 
-    SDL_Event e;
-    int quit = 0;
-
-    while (!quit) {
-        while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) {
-                quit = 1;
+                // Attendre un court instant pour voir le changement
+                startTime = GetTime(); // Enregistrer le temps de départ
+                while (GetTime() - startTime < 2) {} // Attendre 2 seconde
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
+        // Échanger array[low] et array[j]
+        Swap(array, low, j);
 
-        SDL_RenderCopy(renderer, textTexture, NULL, &destRect);
+        // Mettre à jour l'index en surbrillance
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawArray(array, high + 1, j, -1);
+        EndDrawing();
 
-        SDL_RenderPresent(renderer);
+        // Attendre un court instant pour voir le changement
+        startTime = GetTime(); // Enregistrer le temps de départ
+        while (GetTime() - startTime < 2) {} // Attendre 2 seconde
+
+        // Afficher le tableau après la partition
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawArray(array, high + 1, -1, -1);
+        DrawText("Apres la partition : \n", 10, 230, 20, DARKGRAY);
+        for (int k = low; k <= high; k++) {
+            DrawText(TextFormat("%d ", array[k]), 180 + k * 40, 230, 20, DARKGRAY);
+        }
+
+        // Afficher la valeur et l'index du pivot
+        DrawText(TextFormat("Pivot : %d (index : %d)", array[j], j), 10, 260, 20, DARKGRAY);
+        EndDrawing();
+
+        // Attendre un court instant pour voir le changement
+        startTime = GetTime(); // Enregistrer le temps de départ
+        while (GetTime() - startTime < 2) {} // Attendre 2 seconde
+
+        // Trier les sous-tableaux à gauche et à droite du pivot
+        QuickSort(array, low, j - 1);
+        QuickSort(array, j + 1, high);
     }
-
-    SDL_DestroyTexture(textTexture);
-    SDL_FreeSurface(textSurface);
-
-    cleanupSDL(window, renderer, font);
-
-    return 0;
 }
- break;
-                        case SDLK_r:
-                            button1Visible = 0;
-                            for (int i = 0; i < n; i++) {
-                                rectanglesVisible[i] = 0;
-                            }
-                            rectanglesMoving = 1;
-
-                            // Sorting logic integrated into the main loop
-                            static int i = 0;
-                            static int min = 0;
-                            if (i < n - 1) {
-                                if (min == i) {
-                                    min = i + 1;
-                                }
-                                for (int k = i + 1; k < n; k++) {
-                                    if (tab[k] < tab[min]) {
-                                        min = k;
-                                    }
-                                }
-                                if (min != i) {
-                                    int temp = tab[i];
-                                    tab[i] = tab[min];
-                                    tab[min] = temp;
-
-                                    rectangles[min].y += 1;
-                                    rectangles[i].y += 1;
-                                }
-                                i++;
-                            } else {
-                                i = 0;
-                                min = 0;
-                                rectanglesMoving = 0; // Sorting is complete
-                            }
-                            break;
-                        case SDLK_i:
-                            button4Visible = 1;
-                            break;
-                    }
-                    break;
-                case SDL_MOUSEBUTTONDOWN:
-                    if (Event.button.button == SDL_BUTTON_LEFT) {
-                        int mouseX, mouseY;
-                        SDL_GetMouseState(&mouseX, &mouseY);
-
-
-if (button1Visible && mouseX >= button1.x && mouseX < button1.x + button1.w &&
-                            mouseY >= button1.y && mouseY < button1.y + button1.h) {
-                            printf("Button 1 clicked!\n");
-                            button1Visible = 0;
-                            for (int i = 0; i < n; i++) {
-                                rectanglesVisible[i] = 1;
-                            }
-                            rectanglesMoving = 0;
-                            for (int i = 0; i < n; i++) {
-                                rectangles[rectanglesCount++] = (SDL_Rect){j, 100, 100, 50};
-                                j = j + 110;
-                                /*This loop iterates n times, where n is the number of rectangles.
-                        For each iteration, a new SDL_Rect structure is created with the following parameters:
-                       x: The x-coordinate, initialized with the value of j.
-                       y: The y-coordinate, set to 100.
-                       w: Width set to 100 pixels.
-                       h: Height set to 100 pixels.
-                       The new SDL_Rect is added to the rectangles array, and j is incremented by 150 for the next rectangle's x-coordinate.
-                       The post-increment (rectanglesCount++) is used to keep track of the number of rectangles in the array.
-                                */
-                            }
-                        } else if (!button1Visible && mouseX >= button2.x && mouseX < button2.x + button2.w &&
-                                   mouseY >= button2.y && mouseY < button2.y + button2.h) {
-                            printf("Button 2 clicked!\n");
-                            Running = 0;
-                        } else if (!button1Visible && mouseX >= button3.x && mouseX < button3.x + button3.w &&
-                                   mouseY >= button3.y && mouseY < button3.y + button3.h) {
-                            printf("Button 3 clicked!\n");
-                            button1Visible = 0;
-                            for (int i = 0; i < n; i++) {
-                                rectanglesVisible[i] = 0;
-                            }
-                            rectanglesMoving = 1;
-                        } else if (button4Visible && mouseX >= button4.x && mouseX < button4.x + button4.w &&
-                                   mouseY >= button4.y && mouseY < button4.y + button4.h) {
-                            printf("Button 4 clicked!\n");
-                            button4Visible = 0;
-                            rectanglesMoving = 0;
-
-                            // Sorting logic integrated into the main loop
-                            static int i = 0;
-                            static int min = 0;
-                            if (i < n - 1) {
-                                if (min == i) {
-                                    min = i + 1;
-                                }
-                                for (int k = i + 1; k < n; k++) {
-                                    if (tab[k] < tab[min]) {
-                                        min = k;
-                                    }
-                                }
-                                if (min != i) {
-                                    int temp = tab[i];
-                                    tab[i] = tab[min];
-                                    tab[min] = temp;
-
-                                    rectangles[min].y += 1;
-                                    rectangles[i].y += 1;
-                                }
-                                i++;
-                            } else {
-                                i = 0;
-                                min = 0;
-                                rectanglesMoving = 0; // Sorting is complete
-                            }
-                        }
-                    }
-                    break;
-            }
-        }
-
-        SDL_SetRenderDrawColor(Renderer, 100, 100, 100, 200);
-        SDL_RenderClear(Renderer);
-
-
-// Draw buttons
-        if (button1Visible) {
-            SDL_SetRenderDrawColor(Renderer, 0, 255, 0, 255);
-            SDL_RenderFillRect(Renderer, &button1);
-        }
-
-        SDL_SetRenderDrawColor(Renderer, 255, 0, 0, 255);
-        SDL_RenderFillRect(Renderer, &button2);
-
-        SDL_SetRenderDrawColor(Renderer, 0, 0, 255, 255);
-        SDL_RenderFillRect(Renderer, &button3);
-
-        if (button4Visible) {
-            SDL_SetRenderDrawColor(Renderer, 255, 165, 0, 255);
-            SDL_RenderFillRect(Renderer, &button4);
-        }
-
-        if (!rectanglesMoving) {
-            for (int i = 0; i < rectanglesCount; ++i) {
-                if (rectanglesVisible[i]) {
-                    SDL_SetRenderDrawColor(Renderer, 100, 50, 100, 200);
-                    SDL_RenderFillRect(Renderer, &rectangles[i]);
-                }
-            }
-        }
-
-        if (rectanglesMoving) {
-            for (int i = 0; i < rectanglesCount; ++i) {
-                rectangles[i].y += 1;
-                SDL_SetRenderDrawColor(Renderer, 100, 50, 100, 200);
-                SDL_RenderFillRect(Renderer, &rectangles[i]);
-            }
-        }
-
-        SDL_RenderPresent(Renderer);
-        SDL_Delay(10);
+// Fonction pour la recherche dichotomique (BinarySearch)
+int BinarySearch(int *array, int low, int high, int value) {
+    // Si l'intervalle de recherche est vide, la valeur n'est pas dans le tableau
+    if (low > high) {
+        return -1;
     }
+    // Sinon, on calcule l'indice du milieu de l'intervalle
+    int mid = (low + high) / 2;
+    // Si la valeur du milieu est égale à la valeur recherchée, on la renvoie
+    if (array[mid] == value) {
+        return mid;
+    }
+    // Sinon, si la valeur du milieu est plus grande que la valeur recherchée, on cherche dans la partie gauche du tableau
+    else if (array[mid] > value) {
+        return BinarySearch(array, low, mid - 1, value);
+    }
+    // Sinon, on cherche dans la partie droite du tableau
+    else {
+        return BinarySearch(array, mid + 1, high, value);
+    }
+}
 
-    SDL_DestroyRenderer(Renderer);
-    SDL_DestroyWindow(Window);
-    SDL_Quit();
+// Fonction qui échange deux éléments du tableau
+void Swap(int *array, int i, int j) {
+    // Stocker la valeur du tableau à l'index i dans une variable temporaire
+    int temp = array[i];
+    // Affecter la valeur du tableau à l'index j au tableau à l'index i
+    array[i] = array[j];
+    // Affecter la valeur de la variable temporaire au tableau à l'index j
+    array[j] = temp;
+}
 
-    return 0;
 
+// Fonction qui supprime le premier élément du tableau
+void DeleteFirst(int *array, int *size) {
+    // Si la taille du tableau est supérieure à 0
+    if (*size > 0) {
+        // Parcourir le tableau avec une boucle for
+        for (int i = 0; i < *size - 1; i++) {
+            // Affecter la valeur du tableau à l'index i+1 au tableau à l'index i
+            array[i] = array[i + 1];
+        }
+        // Diminuer la taille du tableau de 1
+        (*size)--;
+    }
+}
+// Fonction qui supprime le dernier élément du tableau
+void DeleteLast(int *array, int *size) {
+    // Si la taille du tableau est supérieure à 0
+    if (*size > 0) {
+        // Diminuer la taille du tableau de 1
+        (*size)--;
+    }
+}
+// Fonction qui ajoute un élément au début du tableau
+void InsertFirst(int *array, int *size, int value) {
+    // Si la taille du tableau est inférieure à la taille maximale
+    if (*size < MAX_SIZE) {
+        // Parcourir le tableau à l'envers avec une boucle for
+        for (int i = *size - 1; i >= 0; i--) {
+            // Affecter la valeur du tableau à l'index i au tableau à l'index i+1
+            array[i + 1] = array[i];
+        }
+        // Affecter la valeur à ajouter au tableau à l'index 0
+        array[0] = value;
+        // Augmenter la taille du tableau de 1
+        (*size)++;
+    }
+}
+
+// Fonction qui ajoute un élément à la fin du tableau
+void InsertLast(int *array, int *size, int value) {
+    // Si la taille du tableau est inférieure à la taille maximale
+    if (*size < MAX_SIZE) {
+        // Affecter la valeur à ajouter au tableau à l'index de la taille actuelle
+        array[*size] = value;
+        // Augmenter la taille du tableau de 1
+        (*size)++;
+    }
 }

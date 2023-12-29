@@ -397,3 +397,12 @@
 	"begin_code.h"
 	"close_code.h"
 
+1703812628 source:c:\users\admin\desktop\projet_algo_l2\main.c
+	"raylib.h"
+	<time.h>
+
+1675732523 c:\mingw\x86_64-w64-mingw32\include\sdl2\sdl_ttf.h
+	"SDL.h"
+	"begin_code.h"
+	"close_code.h"
+

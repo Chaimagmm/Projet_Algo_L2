@@ -13,12 +13,12 @@ Lorsque vous exécutez le programme, vous verrez une fenêtre avec le titre “T
 
 Vous pouvez utiliser les touches du clavier pour interagir avec le programme :
 
-1 : Ajouter un nombre aléatoire au début du tableau
-2 : Ajouter un nombre aléatoire à la fin du tableau
-3 : Supprimer le premier élément du tableau
-4 : Supprimer le dernier élément du tableau
-5 : Trier le tableau par ordre croissant avec l’algorithme du tri rapide
-6 : Rechercher un nombre aléatoire dans le tableau avec l’algorithme de la recherche dichotomique
-7 : Quitter le programme
+-1 : Ajouter un nombre aléatoire au début du tableau
+-2 : Ajouter un nombre aléatoire à la fin du tableau
+-3 : Supprimer le premier élément du tableau
+-4 : Supprimer le dernier élément du tableau
+-5 : Trier le tableau par ordre croissant avec l’algorithme du tri rapide
+-6 : Rechercher un nombre aléatoire dans le tableau avec l’algorithme de la recherche dichotomique
+-7 : Quitter le programme
 Le programme affiche le tableau avec des rectangles de couleurs, qui représentent les valeurs des éléments.
 Le programme affiche également le résultat de la recherche ou du tri, ainsi que la valeur et l’index du pivot.

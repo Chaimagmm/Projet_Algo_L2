@@ -7,9 +7,9 @@
 void DrawArray(int *array, int size, int highlightedIndex);
 void QuickSort(int *array, int low, int high);
 void insererDansTableauTriee(int tableau[], int *taille, int valeur) {
-    // Vérifier si le tableau a de la place pour la nouvelle valeur
+    // VÃ©rifier si le tableau a de la place pour la nouvelle valeur
     if (*taille >= MAX_SIZE) {
-        printf("Tableau plein, impossible d'insérer la nouvelle valeur.\n");
+        printf("Tableau plein, impossible d'insÃ©rer la nouvelle valeur.\n");
         return;
     }
 
@@ -19,12 +19,12 @@ void insererDansTableauTriee(int tableau[], int *taille, int valeur) {
         position += 1;
     }
 
-    // Décaler les éléments du tableau vers la droite à partir de la position d'insertion
+    // DÃ©caler les Ã©lÃ©ments du tableau vers la droite Ã  partir de la position d'insertion
     for (int i = *taille; i > position; i--) {
         tableau[i] = tableau[i - 1];
     }
 
-    // Insérer la nouvelle valeur à la position spécifiée
+    // InsÃ©rer la nouvelle valeur Ã  la position spÃ©cifiÃ©e
     tableau[position] = valeur;
 
     // Augmenter la taille du tableau
@@ -38,7 +38,7 @@ int main(void) {
 
     int *array = (int *)malloc(MAX_SIZE * sizeof(int));
     int size = 0;
-    int highlightedIndex = -1;  // Index de l'élément en cours de traitement
+    int highlightedIndex = -1;  // Index de l'Ã©lÃ©ment en cours de traitement
 
     SetTargetFPS(60);
 
@@ -56,7 +56,7 @@ int main(void) {
         DrawText("2. Trier (QuickSort)", 10, 140, 20, DARKGRAY);
         DrawText("3. Quitter", 10, 170, 20, DARKGRAY);
 
-        // Lire l'entrée utilisateur
+        // Lire l'entrÃ©e utilisateur
         int choice = GetKeyPressed();
 
     int taille, val, tableau[MAX_SIZE];
@@ -75,10 +75,10 @@ int main(void) {
             case '2': // Trier (QuickSort)
                 QuickSort(array, 0, size - 1);
                 highlightedIndex = -1;
-// Réinitialiser l'index en          surbrillance après le tri
+// RÃ©initialiser l'index en          surbrillance aprÃ¨s le tri
                 break;
           case '1':
-     printf("Donnez la valeur que vous souhaitez insérer : ");
+     printf("Donnez la valeur que vous souhaitez insÃ©rer : ");
      scanf("%d", &val);
      insererDansTableauTriee(tableau, &taille, val);
 highlightedIndex = -1;
@@ -133,12 +133,12 @@ void QuickSort(int *array, int low, int high) {
                 j--;
             }
 if (i < j) {
-                // Échanger array[i] et array[j]
+                // Ã‰changer array[i] et array[j]
                 int temp = array[i];
                 array[i] = array[j];
                 array[j] = temp;
 
-                // Mettre à jour l'index en surbrillance
+                // Mettre Ã  jour l'index en surbrillance
                 BeginDrawing();
                 ClearBackground(RAYWHITE);
                 DrawArray(array, high + 1, i);
@@ -149,12 +149,12 @@ if (i < j) {
             }
         }
 
-        // Échanger array[low] et array[j]
+        // Ã‰changer array[low] et array[j]
         int temp = array[low];
         array[low] = array[j];
         array[j] = temp;
 
-        // Mettre à jour l'index en surbrillance
+        // Mettre Ã  jour l'index en surbrillance
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawArray(array, high + 1, j);
@@ -163,7 +163,7 @@ if (i < j) {
         // Attendre un court instant pour voir le changement
         while (GetTime() < 0.1) {}  // Pause d'environ 0.1 seconde
 
-        // Trier les sous-tableaux à gauche et à droite du pivot
+        // Trier les sous-tableaux Ã  gauche et Ã  droite du pivot
         QuickSort(array, low, j - 1);
         QuickSort(array, j + 1, high);
     }
